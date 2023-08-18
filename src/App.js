@@ -95,7 +95,7 @@ function App() {
         bgColor='white'
         shadow='base'
         minW='container.md'
-        zIndex='modal'
+        zIndex='1'
       >
         <HStack spacing={4}>
           <Autocomplete>
