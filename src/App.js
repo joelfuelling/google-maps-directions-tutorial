@@ -10,9 +10,11 @@ import {
   Text,
 } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
-import {useJsApiLoader} from '@react-google-maps/api'
+import {useJsApiLoader, GoogleMap} from '@react-google-maps/api'
 
+const center = { lat: 48.8584, lng: 2.2945 }
 function App() {
+  
 
   const containerStyle = {
     margin: '3% auto',
@@ -24,7 +26,7 @@ function App() {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
   })
 
-  if (isLoaded) {
+  if (!isLoaded) {
     return <Skeleton style={containerStyle}/>
   }
 
@@ -37,7 +39,9 @@ function App() {
       w='100vw'
     >
       <Box position='absolute' left={0} top={0} h='100%' w='100%'>
-        {/* Google map Box */}
+        <GoogleMap center={center} zoom={15} mapContainerStyle={{width: '100%', height: '100%'}}> 
+          {/* markers, directions */}
+        </GoogleMap>
       </Box>
 
       <Box
