@@ -6,23 +6,39 @@ import {
   HStack,
   IconButton,
   Input,
+  Skeleton,
   Text,
 } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
+import {useJsApiLoader} from '@react-google-maps/api'
 
 function App() {
+
+  const containerStyle = {
+    margin: '3% auto',
+    width: '94%',
+    height: '700px',
+};
+
+  const {isLoaded} = useJsApiLoader({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+  })
+
+  if (isLoaded) {
+    return <Skeleton style={containerStyle}/>
+  }
+
   return (
     <Flex
       position='relative'
       flexDirection='column'
       alignItems='center'
-      bgColor='blue.200'
-      bgImage='https://images.unsplash.com/photo-1647117181799-0ac3e50a548a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80'
-      bgPos='bottom'
       h='100vh'
       w='100vw'
     >
-      <Box position='absolute' left={0} top={0} h='100%' w='100%'></Box>
+      <Box position='absolute' left={0} top={0} h='100%' w='100%'>
+        {/* Google map Box */}
+      </Box>
 
       <Box
         p={4}
