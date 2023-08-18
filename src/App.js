@@ -9,25 +9,59 @@ import {
   Skeleton,
   Text,
 } from '@chakra-ui/react'
+import { useState, useRef } from 'react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
-import {useJsApiLoader, GoogleMap} from '@react-google-maps/api'
+import {useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer} from '@react-google-maps/api'
 
 const center = { lat: 48.8584, lng: 2.2945 }
 function App() {
-  
+  const [map, setMap] = useState(/** @type google.maps.Map */ (null))
+  const [directionResponse, setDirectionsResponse] = useState(null)
+  const [distance, setDistance] = useState('')
+  const [duration, setDuration] = useState('')
+
+  /** @type React.MutableRefObject<HTMLInputElement> */
+  const originRef = useRef()
+  /** @type React.MutableRefObject<HTMLInputElement> */
+  const destinationRef = useRef()
 
   const containerStyle = {
     margin: '3% auto',
     width: '94%',
-    height: '700px',
+    height: '950px',
 };
 
   const {isLoaded} = useJsApiLoader({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE,
+    libraries: ['places'],
   })
 
   if (!isLoaded) {
     return <Skeleton style={containerStyle}/>
+  }
+
+  async function calculcateRoute() {
+    if(originRef.current.value === '' || destinationRef.current.value === '') {
+      return
+    }
+    // eslint-disable-next-line no-undef
+    const directionsService = new google.maps.DirectionsService()
+    const results = await directionsService.route({
+      origin: originRef.current.value,
+      destination :destinationRef.current.value,
+      // eslint-disable-next-line no-undef
+      travelMode: google.maps.TravelMode.DRIVING
+    })
+    setDirectionsResponse(results)
+    setDistance(results.routes[0].legs[0].distance.text)
+    setDuration(results.routes[0].legs[0].duration.text)
+  }
+  function clearRoute() {
+    setDirectionsResponse(null)
+    setDirectionsResponse('')
+    setDirectionsResponse('')
+    originRef.current.value = ''
+    destinationRef.current.value = ''
   }
 
   return (
@@ -39,8 +73,18 @@ function App() {
       w='100vw'
     >
       <Box position='absolute' left={0} top={0} h='100%' w='100%'>
-        <GoogleMap center={center} zoom={15} mapContainerStyle={{width: '100%', height: '100%'}}> 
-          {/* markers, directions */}
+        <GoogleMap 
+        center={center}
+        zoom={15} 
+        mapContainerStyle={containerStyle}
+        options={{zoomControl: false,
+        streetViewControl: false, 
+        mapTypeControl: false,
+        fullscreenControl: false,}}
+        onLoad={(map) => setMap(map)}
+        > 
+          <Marker position={center}/>
+          {directionResponse && <DirectionsRenderer directions={directionResponse}/> }
         </GoogleMap>
       </Box>
 
@@ -54,27 +98,31 @@ function App() {
         zIndex='modal'
       >
         <HStack spacing={4}>
-          <Input type='text' placeholder='Origin' />
-          <Input type='text' placeholder='Destination' />
+          <Autocomplete>
+          <Input type='text' placeholder='Origin' ref={originRef}/>
+          </Autocomplete>
+          <Autocomplete>
+          <Input type='text' placeholder='Destination' ref={destinationRef} />
+          </Autocomplete>
           <ButtonGroup>
-            <Button colorScheme='pink' type='submit'>
+            <Button colorScheme='pink' type='submit' onClick={calculcateRoute}>
               Calculate Route
             </Button>
             <IconButton
               aria-label='center back'
               icon={<FaTimes />}
-              onClick={() => alert(123)}
+              onClick={clearRoute}
             />
           </ButtonGroup>
         </HStack>
         <HStack spacing={4} mt={4} justifyContent='space-between'>
-          <Text>Distance: </Text>
-          <Text>Duration: </Text>
+          <Text>Distance: {distance}</Text>
+          <Text>Duration: {duration}</Text>
           <IconButton
             aria-label='center back'
             icon={<FaLocationArrow />}
             isRound
-            onClick={() => alert(123)}
+            onClick={() => map.panTo(center)}
           />
         </HStack>
       </Box>
